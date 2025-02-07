@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import "../leaderboard.css";
 import { useNavigate } from "react-router-dom";
 import { use } from "react";
+import emailjs from "emailjs-com";
 
 const supabaseUrl = "https://dgarmemdwvskezsaneaw.supabase.co";
 const supabaseKey =
@@ -14,8 +15,10 @@ const Leaderboard = () => {
   const [leaderboard, setLeaderboard] = useState([]);
   const [name, setName] = useState("");
   const [points, setPoints] = useState(0);
+  const [userEmail, setUserEmail] = useState("");
 
   useEffect(() => {
+    getUserEmail();
     fetchLeaderboard();
   }, []);
 
@@ -27,6 +30,46 @@ const Leaderboard = () => {
 
     if (error) console.log("Error fetching leaderboard:", error);
     else setLeaderboard(data);
+  };
+
+  const getUserEmail = async () => {
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+    if (error) {
+      console.error("Error fetching user:", error);
+    } else if (user) {
+      setUserEmail(user.email);
+    }
+  };
+
+  const handleEmailSend = (userName) => {
+    const templateParams = {
+      to_name: userName,
+      from_email: userEmail, // Use the user's email as sender's email
+      message: ` You have scored ${points} points!`,
+    };
+
+    emailjs
+      .send(
+        "service_ts16meq",
+        "template_sg3l5je",
+        templateParams,
+        "M2PPg2CmcOWPoYuHB"
+      )
+      .then(
+        (response) => {
+          console.log(
+            "Email successfully sent!",
+            response.status,
+            response.text
+          );
+        },
+        (err) => {
+          console.log("Failed to send email. Error: ", err);
+        }
+      );
   };
 
   const handleSubmit = async (e) => {
@@ -57,6 +100,7 @@ const Leaderboard = () => {
 
       if (insertError) console.log("Error adding entry:", insertError);
     }
+    handleEmailSend(name);
 
     fetchLeaderboard();
   };
@@ -64,7 +108,7 @@ const Leaderboard = () => {
   return (
     <>
       <button
-        class="button"
+        className="button"
         onClick={() => {
           navigate("/main");
         }}
@@ -78,7 +122,7 @@ const Leaderboard = () => {
         <form className="form" onSubmit={handleSubmit}>
           <input
             placeholder="Name...."
-            class="input"
+            className="input"
             name="text"
             type="text"
             value={name}
@@ -93,10 +137,10 @@ const Leaderboard = () => {
             onChange={(e) => setPoints(Number(e.target.value))}
           />
 
-          <button class="pushable" type="submit">
-            <span class="shadow"></span>
-            <span class="edge"></span>
-            <span class="front">Add/Update </span>
+          <button className="pushable" type="submit">
+            <span className="shadow"></span>
+            <span className="edge"></span>
+            <span className="front">Add/Update </span>
           </button>
         </form>
         <table className="table">
