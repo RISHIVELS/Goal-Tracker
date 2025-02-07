@@ -1,6 +1,8 @@
 import "./../main.css";
+import { Navigate, useNavigate } from "react-router-dom";
 
 function MainPage() {
+  const navigate = useNavigate();
   return (
     <div className="main">
       <div className="header">
@@ -43,8 +45,15 @@ function MainPage() {
               </a>
             </li>
             <li>
-              <a href="/leaderboard">
-                <button className="header-link">Leaderboard</button>
+              <a href="#">
+                <button
+                  className="header-link"
+                  onClick={() => {
+                    Navigate("/leaderboard");
+                  }}
+                >
+                  Leaderboard
+                </button>
               </a>
             </li>
           </ul>
