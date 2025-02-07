@@ -143,7 +143,11 @@ function MainPage() {
       </div>
 
       <div className="setup-container" id="installation">
-        <h2 className="setup-heading">Setup Guide</h2>
+        <div className="card-setup-main">
+          <div class="card-setup">
+            <h2>SETUP GUIDE</h2>
+          </div>
+        </div>
         <p className="setup-p">
           Get started with Habit Tracking in just a few simple steps. Follow our
           comprehensive guide below.
