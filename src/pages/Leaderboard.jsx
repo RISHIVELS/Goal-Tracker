@@ -110,10 +110,14 @@ const Leaderboard = () => {
     const sortedLeaderboard = [...leaderboard].sort(
       (a, b) => b.points - a.points
     );
-    const userIndex = sortedLeaderboard.findIndex((user) => user.name === name);
+    const userIndex = sortedLeaderboard.findIndex(
+      (user) => user.name.trim().toLowerCase() === name.trim().toLowerCase()
+    );
 
     const rankEmoji =
-      userIndex === 0
+      userIndex === -1
+        ? console.log(user.name)
+        : userIndex === 0
         ? "🥇"
         : userIndex === 1
         ? "🥈"
@@ -121,7 +125,9 @@ const Leaderboard = () => {
         ? "🥉"
         : `${userIndex + 1}`;
 
-    const message = `Hi ${name}, your points have been updated to ${points}. You are currently ranked ${rankEmoji}. Keep pushing forward to reach the top! 🎮`;
+    console.log(`Rank for ${name}: ${rankEmoji}`);
+
+    const message = `Hi ${name}, your points have been updated to ${points}. Keep pushing forward to reach the top! 🎮`;
     sendEmailNotification(name, message);
   };
 
