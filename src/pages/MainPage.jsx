@@ -49,7 +49,7 @@ function MainPage() {
                 <button
                   className="header-link"
                   onClick={() => {
-                    Navigate("/leaderboard");
+                    navigate("/leaderboard");
                   }}
                 >
                   Leaderboard
