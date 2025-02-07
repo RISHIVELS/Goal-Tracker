@@ -17,7 +17,7 @@ const Leaderboard = () => {
 
   useEffect(() => {
     fetchLeaderboard();
-    const emailInterval = setInterval(() => sendEmailsToAllUsers(), 60000); // Send emails every 60 seconds
+    const emailInterval = setInterval(() => sendEmailsToAllUsers(), 60000);
     return () => clearInterval(emailInterval);
   }, []);
 
@@ -107,7 +107,6 @@ const Leaderboard = () => {
 
     await fetchLeaderboard();
 
-    // Determine user rank and display message
     const sortedLeaderboard = [...leaderboard].sort(
       (a, b) => b.points - a.points
     );
