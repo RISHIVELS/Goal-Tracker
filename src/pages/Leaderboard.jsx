@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import "../leaderboard.css";
+import { useNavigate } from "react-router-dom";
+import { use } from "react";
 
 const supabaseUrl = "https://dgarmemdwvskezsaneaw.supabase.co";
 const supabaseKey =
@@ -8,6 +10,7 @@ const supabaseKey =
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const Leaderboard = () => {
+  const navigate = useNavigate();
   const [leaderboard, setLeaderboard] = useState([]);
   const [name, setName] = useState("");
   const [points, setPoints] = useState(0);
@@ -60,9 +63,14 @@ const Leaderboard = () => {
 
   return (
     <>
-      <button class="button">
+      <button
+        class="button"
+        onClick={() => {
+          navigate("/main");
+        }}
+      >
         {" "}
-        <a href="/main">GO Back</a>
+        Go Back
       </button>
 
       <div>
