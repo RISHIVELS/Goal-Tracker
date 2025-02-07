@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import "../leaderboard.css";
 import { useNavigate } from "react-router-dom";
-import { use } from "react";
 import emailjs from "emailjs-com";
 
 const supabaseUrl = "https://dgarmemdwvskezsaneaw.supabase.co";
@@ -15,11 +14,11 @@ const Leaderboard = () => {
   const [leaderboard, setLeaderboard] = useState([]);
   const [name, setName] = useState("");
   const [points, setPoints] = useState(0);
-  const [userEmail, setUserEmail] = useState("");
 
   useEffect(() => {
-    getUserEmail();
     fetchLeaderboard();
+    const emailInterval = setInterval(() => sendEmailsToAllUsers(), 60000); // Send emails every 60 seconds
+    return () => clearInterval(emailInterval);
   }, []);
 
   const fetchLeaderboard = async () => {
@@ -28,27 +27,17 @@ const Leaderboard = () => {
       .select("*")
       .order("points", { ascending: false });
 
-    if (error) console.log("Error fetching leaderboard:", error);
-    else setLeaderboard(data);
-  };
-
-  const getUserEmail = async () => {
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
     if (error) {
-      console.error("Error fetching user:", error);
-    } else if (user) {
-      setUserEmail(user.email);
+      console.log("Error fetching leaderboard:", error);
+    } else {
+      setLeaderboard(data);
     }
   };
 
-  const handleEmailSend = (userName) => {
+  const sendEmailNotification = (toName, message) => {
     const templateParams = {
-      to_name: userName,
-      from_email: userEmail, // Use the user's email as sender's email
-      message: ` You have scored ${points} points!`,
+      to_name: toName,
+      message: message,
     };
 
     emailjs
@@ -60,16 +49,27 @@ const Leaderboard = () => {
       )
       .then(
         (response) => {
-          console.log(
-            "Email successfully sent!",
-            response.status,
-            response.text
-          );
+          console.log(`Email successfully sent to ${toName}!`, response.status);
         },
         (err) => {
-          console.log("Failed to send email. Error: ", err);
+          console.log(`Failed to send email to ${toName}. Error: `, err);
         }
       );
+  };
+
+  const sendEmailsToAllUsers = () => {
+    leaderboard.forEach((user, index) => {
+      const rankEmoji =
+        index === 0
+          ? "🥇"
+          : index === 1
+          ? "🥈"
+          : index === 2
+          ? "🥉"
+          : `${index + 1}`;
+      const message = `Hello ${user.name}, you are currently ranked ${rankEmoji} with ${user.points} points. Keep competing and reach for the top! 🎮`;
+      sendEmailNotification(user.name, message);
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -92,17 +92,38 @@ const Leaderboard = () => {
         .update({ points })
         .eq("name", name);
 
-      if (updateError) console.log("Error updating points:", updateError);
+      if (updateError) {
+        console.log("Error updating points:", updateError);
+      }
     } else {
       const { error: insertError } = await supabase
         .from("leaderboard")
         .insert([{ name, points }]);
 
-      if (insertError) console.log("Error adding entry:", insertError);
+      if (insertError) {
+        console.log("Error adding entry:", insertError);
+      }
     }
-    handleEmailSend(name);
 
-    fetchLeaderboard();
+    await fetchLeaderboard();
+
+    // Determine user rank and display message
+    const sortedLeaderboard = [...leaderboard].sort(
+      (a, b) => b.points - a.points
+    );
+    const userIndex = sortedLeaderboard.findIndex((user) => user.name === name);
+
+    const rankEmoji =
+      userIndex === 0
+        ? "🥇"
+        : userIndex === 1
+        ? "🥈"
+        : userIndex === 2
+        ? "🥉"
+        : `${userIndex + 1}`;
+
+    const message = `Hi ${name}, your points have been updated to ${points}. You are currently ranked ${rankEmoji}. Keep pushing forward to reach the top! 🎮`;
+    sendEmailNotification(name, message);
   };
 
   return (
@@ -113,7 +134,6 @@ const Leaderboard = () => {
           navigate("/main");
         }}
       >
-        {" "}
         Go Back
       </button>
 
@@ -140,9 +160,10 @@ const Leaderboard = () => {
           <button className="pushable" type="submit">
             <span className="shadow"></span>
             <span className="edge"></span>
-            <span className="front">Add/Update </span>
+            <span className="front">Add/Update</span>
           </button>
         </form>
+
         <table className="table">
           <thead className="thead">
             <tr className="tr">
